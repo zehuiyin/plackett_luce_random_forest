@@ -373,31 +373,3 @@ plforest_mc <- function(rankings, covariates,
   
   return(output)
 }
-
-###############################################################################
-###############################################################################
-# Partition large list data into smaller files for data transfer
-split.file <- function(db, rows, basename) {
-  n = nrow(db)
-  m = n %/% rows
-  for (k in seq_len(m)) {
-    db.sub <- db[seq(1 + (k-1)*rows, k*rows), , drop = F]
-    saveRDS(db.sub, file = sprintf("%s%.5d.rds", basename, k),
-            compress = "xz", ascii = F)
-  }
-  if (m * rows < n) {
-    db.sub <- db[seq(1 + m*rows, n), , drop = F]
-    saveRDS(db.sub, file = sprintf("%s%.5d.rds", basename, m+1),
-            compress = "xz", ascii = F)
-    m <- m + 1
-  }
-  m
-}
-
-###############################################################################
-###############################################################################
-# Join the partitioned files together into 1
-join.files <- function(basename) {
-  files <- sort(list.files(pattern = sprintf("%s[0-9]{5}\\.rds", basename)))
-  do.call("rbind", lapply(files, readRDS))
-}
